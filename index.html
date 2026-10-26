@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Análisis heurístico de UX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef2f4;--surface:#fff;--ink:#14232b;--muted:#5b6b74;--line:#cfd9de;--accent:#0f5c6e;--accent-ink:#fff;
+  --s0:#9aa9b1;--s1:#5aa38a;--s2:#d9a521;--s3:#e0701f;--s4:#c2272d;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1a20;--surface:#18262e;--ink:#e6eef1;--muted:#93a5ae;--line:#2b3d47;--accent:#5cc1d6;--accent-ink:#06222a;color-scheme:dark;}}
+:root[data-theme="dark"]{--bg:#0f1a20;--surface:#18262e;--ink:#e6eef1;--muted:#93a5ae;--line:#2b3d47;--accent:#5cc1d6;--accent-ink:#06222a;color-scheme:dark;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.55 "Source Sans 3",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque","Source Sans 3",system-ui,sans-serif;line-height:1.15;margin:0}
+.wrap{max-width:900px;margin:0 auto;padding:28px 18px 60px}
+h1{font-size:clamp(1.9rem,5vw,2.8rem);font-weight:700}
+.lead{color:var(--muted);max-width:60ch;margin:10px 0 24px}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:26px}
+label.f{display:block;font-weight:600;font-size:.9rem}
+input[type=text],input[type=date],textarea{width:100%;margin-top:4px;padding:9px 11px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);font:inherit}
+textarea{resize:vertical;min-height:70px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.h{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--s0);border-radius:8px;padding:18px;margin-bottom:16px}
+.h[data-s="1"]{border-left-color:var(--s1)}.h[data-s="2"]{border-left-color:var(--s2)}
+.h[data-s="3"]{border-left-color:var(--s3)}.h[data-s="4"]{border-left-color:var(--s4)}
+.h h3{font-size:1.2rem}
+.h p.d{color:var(--muted);margin:6px 0 4px;max-width:70ch}
+details{margin:6px 0 12px;color:var(--muted);font-size:.95rem}
+summary{cursor:pointer;color:var(--accent);font-weight:600}
+.sev{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px;border:0;padding:0}
+.sev legend{font-weight:600;font-size:.9rem;padding:0;margin-bottom:6px}
+.sev label{cursor:pointer}
+.sev input{position:absolute;opacity:0}
+.sev span{display:block;padding:6px 11px;border:1px solid var(--line);border-radius:6px;font-size:.92rem;background:var(--bg)}
+.sev input:checked+span{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.sev input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:620px){.two{grid-template-columns:1fr}}
+.sum{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px;margin-top:30px}
+.sum h2{font-size:1.5rem;margin-bottom:12px}
+.big{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:2.6rem;font-weight:700;line-height:1}
+.bar{display:flex;height:16px;border-radius:4px;overflow:hidden;background:var(--line);margin:14px 0 8px}
+.bar i{display:block;height:100%}
+.leg{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.9rem;color:var(--muted)}
+.leg b{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.top{margin:16px 0 0;padding-left:20px}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+button{font:600 1rem "Source Sans 3",system-ui,sans-serif;padding:10px 16px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+button.o{background:transparent;color:var(--accent)}
+#rep{display:none;margin-top:14px;min-height:220px;font:.9rem/1.5 ui-monospace,Menlo,Consolas,monospace}
+#msg{margin-left:4px;align-self:center;color:var(--muted);font-size:.92rem}
+@media(prefers-reduced-motion:no-preference){.bar i{transition:width .3s}}
+
+.tabs{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px}
+.tabs button{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.tabs button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tabs input{width:auto;margin:0;max-width:200px}
+.ph{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.ph figure{position:relative;margin:0}
+.ph img{display:block;height:84px;border-radius:6px;border:1px solid var(--line)}
+.ph figure button{position:absolute;top:3px;right:3px;padding:0 7px;font-size:.9rem;line-height:1.4}
+.ph input{width:auto;margin:0}
+.tw{overflow-x:auto;margin-top:16px}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border-bottom:1px solid var(--line);padding:7px 9px;text-align:left}
+td.n{text-align:center;font-weight:600}
+#view{display:none;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:22px;margin-top:20px}
+#view h2{font-size:1.5rem}#view h3{font-size:1.1rem;margin:20px 0 6px}
+#view img{max-width:100%;max-height:300px;border:1px solid var(--line);border-radius:6px;margin:4px 6px 4px 0}
+#view p{margin:4px 0;white-space:pre-wrap}
+@media print{.wrap>*:not(#view){display:none!important}#view{display:block!important;border:0;padding:0}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Análisis heurístico de UX</h1>
+  <p class="lead">Evalúa una interfaz con las 10 heurísticas de Nielsen. Puede participar más de un evaluador: cada uno puntúa por separado y el resumen compara y promedia.</p>
+
+  <div class="meta">
+    <label class="f">Producto o pantalla evaluada<input type="text" id="prod" placeholder="Ej.: App de reservas, flujo de pago"></label>
+    <label class="f">Fecha<input type="date" id="fecha"></label>
+  </div>
+
+  <div class="tabs" id="tabs" role="group" aria-label="Evaluadores"></div>
+  <div id="list"></div>
+
+  <section class="sum" aria-live="polite">
+    <h2>Resumen</h2>
+    <div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-end">
+      <div><div class="big" id="avg">–</div><div style="color:var(--muted)">gravedad media (0–4)</div></div>
+      <div><div class="big" id="cnt">0/10</div><div style="color:var(--muted)">heurísticas evaluadas</div></div>
+      <div><div class="big" id="nev">1</div><div style="color:var(--muted)">evaluadores</div></div>
+    </div>
+    <div class="bar" id="bar" role="img" aria-label="Distribución de gravedad"></div>
+    <div class="leg" id="leg"></div>
+    <div class="tw"><table id="tbl"></table></div>
+    <ol class="top" id="top"></ol>
+    <div class="btns">
+      <button data-f="txt">Copiar texto</button>
+      <button data-f="md" class="o">Copiar Markdown</button>
+      <button data-f="csv" class="o">Copiar CSV</button>
+      <button id="vw" class="o">Informe visual</button>
+      <button id="pr" class="o">Imprimir / PDF</button>
+      <button id="rs" class="o">Reiniciar todo</button>
+      <span id="msg"></span>
+    </div>
+    <textarea id="rep" readonly aria-label="Informe generado"></textarea>
+  </section>
+  <section id="view"></section>
+</div>
+
+<script>
+var H=[
+["Visibilidad del estado del sistema","El sistema informa siempre al usuario de lo que ocurre, con una respuesta adecuada y en un tiempo razonable.","Indicadores de carga, confirmaciones, pasos de un proceso, estado de los botones."],
+["Coincidencia entre el sistema y el mundo real","Usa el lenguaje del usuario, con palabras y conceptos familiares, y un orden natural de la información.","Jerga técnica, iconos ambiguos, metáforas que no se entienden."],
+["Control y libertad del usuario","Hay una salida clara para los errores o acciones accidentales: deshacer, rehacer, cancelar.","Botón de volver, cancelar un flujo, deshacer un borrado."],
+["Consistencia y estándares","Los mismos elementos significan lo mismo en toda la interfaz y siguen las convenciones de la plataforma.","Nombres de acciones distintos para lo mismo, estilos de botón incoherentes."],
+["Prevención de errores","Se evitan los problemas antes de que ocurran: restricciones, valores por defecto y confirmaciones.","Validación en vivo, confirmar acciones destructivas, formatos de fecha guiados."],
+["Reconocer antes que recordar","Se minimiza la carga de memoria haciendo visibles acciones, opciones y ayuda.","Etiquetas visibles, historial, sugerencias, instrucciones en contexto."],
+["Flexibilidad y eficiencia de uso","Atajos y aceleradores para expertos sin molestar a novatos; permite personalizar.","Atajos de teclado, favoritos, búsqueda, acciones en lote."],
+["Diseño estético y minimalista","Los mensajes y pantallas no contienen información irrelevante que compita con lo importante.","Exceso de texto, jerarquía visual débil, ruido decorativo."],
+["Ayudar a reconocer, diagnosticar y recuperarse de errores","Los mensajes de error usan lenguaje claro, indican el problema y proponen una solución.","Errores con códigos crípticos, mensajes sin salida, campos sin explicación."],
+["Ayuda y documentación","Idealmente no hace falta, pero si existe debe ser fácil de buscar, concreta y orientada a tareas.","Centro de ayuda, tooltips, tutoriales de primera vez."]
+];
+var SEV=["Sin problema","Cosmético","Menor","Mayor","Catastrófico"];
+var COL=["var(--s0)","var(--s1)","var(--s2)","var(--s3)","var(--s4)"];
+var S,$=function(i){return document.getElementById(i)};
+var esc=function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")};
+function fresh(){return{meta:{},cur:0,evs:[{n:"Evaluador/a 1",d:{}}]}}
+function load(){
+  try{S=JSON.parse(localStorage.getItem("hx2"));}catch(e){S=null}
+  if(!S||!S.evs){
+    S=fresh();
+    try{var o=JSON.parse(localStorage.getItem("hx"));if(o){S.meta=o.meta||{};for(var k in o)if(/^\d+$/.test(k))S.evs[0].d[k]=o[k];if(S.meta.eval)S.evs[0].n=S.meta.eval}}catch(e){}
+  }
+}
+function save(){try{localStorage.setItem("hx2",JSON.stringify(S))}catch(e){say("No se pudo guardar: demasiadas capturas para el navegador")}}
+function say(s){$("msg").textContent=s;setTimeout(function(){$("msg").textContent=""},3000)}
+var E=function(){return S.evs[S.cur]};
+var get=function(i,ev){return(ev||E()).d[i]||{}};
+function put(i,k,v){var d=E().d;d[i]=d[i]||{};d[i][k]=v}
+function sevOf(ev,i){var d=get(i,ev);return d.s!=null&&d.s!==""?+d.s:null}
+function avgOf(i){var v=S.evs.map(function(e){return sevOf(e,i)}).filter(function(x){return x!==null});return v.length?v.reduce(function(a,b){return a+b},0)/v.length:null}
+
+function tabs(){
+  var h="";
+  S.evs.forEach(function(e,i){h+='<button data-t="'+i+'" aria-pressed="'+(i==S.cur)+'">'+esc(e.n)+'</button>'});
+  h+='<button data-add="1" class="o" style="background:transparent">+ Añadir evaluador</button>'
+   +'<input type="text" id="nm" value="'+esc(E().n)+'" aria-label="Nombre del evaluador activo">';
+  if(S.evs.length>1)h+='<button data-del="1" class="o" style="background:transparent">Quitar</button>';
+  $("tabs").innerHTML=h;
+}
+function list(){
+  var h="";
+  H.forEach(function(x,i){
+    var d=get(i),sv=d.s,im=d.img||[];
+    h+='<article class="h" id="h'+i+'" data-s="'+(sv==null?"":sv)+'"><h3>H'+(i+1)+'. '+x[0]+'</h3><p class="d">'+x[1]+'</p>'
+    +'<details><summary>Qué revisar</summary><p>'+x[2]+'</p></details><fieldset class="sev"><legend>Gravedad</legend>';
+    SEV.forEach(function(s,k){h+='<label><input type="radio" name="s'+i+'" value="'+k+'"'+(sv==k&&sv!=="" ?" checked":"")+'><span>'+k+' · '+s+'</span></label>'});
+    h+='</fieldset><div class="two"><label class="f">Problemas observados<textarea data-k="'+i+'" data-f="o"></textarea></label>'
+    +'<label class="f">Recomendación<textarea data-k="'+i+'" data-f="r"></textarea></label></div><div class="ph">';
+    im.forEach(function(u,j){h+='<figure><img src="'+u+'" alt="Captura '+(j+1)+' de H'+(i+1)+'"><button class="o" data-rm="'+i+':'+j+'" aria-label="Quitar captura" style="background:var(--surface)">×</button></figure>'});
+    h+='<label class="f" style="font-weight:400">Añadir capturas<br><input type="file" accept="image/*" multiple data-img="'+i+'"></label></div></article>';
+  });
+  $("list").innerHTML=h;
+  document.querySelectorAll("textarea[data-k]").forEach(function(t){t.value=get(t.dataset.k)[t.dataset.f]||""});
+}
+function summary(){
+  var n=0,sum=0,c=[0,0,0,0,0],items=[];
+  H.forEach(function(x,i){var a=avgOf(i);if(a!==null){n++;sum+=a;c[Math.round(a)]++;if(a>0)items.push({i:i,v:a})}});
+  $("avg").textContent=n?(sum/n).toFixed(1):"–";$("cnt").textContent=n+"/10";$("nev").textContent=S.evs.length;
+  var b="",l="";
+  for(var k=0;k<5;k++){b+='<i style="width:'+(n?c[k]/n*100:0)+'%;background:'+COL[k]+'"></i>';l+='<span><b style="background:'+COL[k]+'"></b>'+SEV[k]+': '+c[k]+'</span>'}
+  $("bar").innerHTML=b;$("leg").innerHTML=l;
+  var t="<tr><th>Heurística</th>"+S.evs.map(function(e){return"<th>"+esc(e.n)+"</th>"}).join("")+"<th>Media</th></tr>";
+  H.forEach(function(x,i){
+    t+="<tr><td>H"+(i+1)+". "+x[0]+"</td>"+S.evs.map(function(e){var v=sevOf(e,i);return'<td class="n">'+(v===null?"–":v)+"</td>"}).join("");
+    var a=avgOf(i);t+='<td class="n">'+(a===null?"–":a.toFixed(1))+"</td></tr>";
+  });
+  $("tbl").innerHTML=t;
+  items.sort(function(a,b){return b.v-a.v});
+  $("top").innerHTML=items.slice(0,3).map(function(t){return"<li><strong>H"+(t.i+1)+". "+H[t.i][0]+"</strong> (media "+t.v.toFixed(1)+")</li>"}).join("");
+  H.forEach(function(x,i){var a=$("h"+i);if(a){var v=sevOf(E(),i);a.dataset.s=v===null?"":v}});
+}
+function all(){tabs();list();summary();if($("view").style.display==="block")visual()}
+
+function head(){var m=S.meta;return"Producto: "+(m.prod||"–")+"\nFecha: "+(m.fecha||"–")+"\nEvaluadores: "+S.evs.map(function(e){return e.n}).join(", ")}
+function mean(){var s=0,n=0;H.forEach(function(x,i){var a=avgOf(i);if(a!==null){s+=a;n++}});return n?(s/n).toFixed(1):"–"}
+function sevTxt(v){return v===null?"sin evaluar":v+" – "+SEV[v]}
+function fTxt(md){
+  var t=md?"# Informe de evaluación heurística\n\n":"INFORME DE EVALUACIÓN HEURÍSTICA\n";
+  t+=head().replace(/\n/g,md?"  \n":"\n")+"\nGravedad media: "+mean()+" / 4\n\n";
+  H.forEach(function(x,i){
+    var a=avgOf(i);t+=(md?"## ":"")+"H"+(i+1)+". "+x[0]+" (media "+(a===null?"–":a.toFixed(1))+")\n";
+    S.evs.forEach(function(e){
+      var d=get(i,e),n=(d.img||[]).length;
+      t+=(md?"- **":"  ")+e.n+(md?"**":"")+": "+sevTxt(sevOf(e,i))+(n?" ("+n+" captura"+(n>1?"s":"")+")":"")+"\n";
+      if(d.o)t+="    Problemas: "+d.o.replace(/\n/g," ")+"\n";
+      if(d.r)t+="    Recomendación: "+d.r.replace(/\n/g," ")+"\n";
+    });t+="\n";
+  });return t;
+}
+function fCsv(){
+  var q=function(s){return'"'+String(s==null?"":s).replace(/"/g,'""').replace(/\n/g," ")+'"'};
+  var r=["Heuristica,Evaluador,Gravedad,Problemas,Recomendacion,Capturas"];
+  H.forEach(function(x,i){S.evs.forEach(function(e){var d=get(i,e),v=sevOf(e,i);
+    r.push([q("H"+(i+1)+". "+x[0]),q(e.n),v===null?"":v,q(d.o),q(d.r),(d.img||[]).length].join(","))})});
+  return r.join("\n");
+}
+function visual(){
+  var h="<h2>Informe de evaluación heurística</h2><p>"+esc(head())+"\nGravedad media: "+mean()+" / 4</p>";
+  H.forEach(function(x,i){
+    var a=avgOf(i);h+="<h3>H"+(i+1)+". "+x[0]+" · media "+(a===null?"–":a.toFixed(1))+"</h3>";
+    S.evs.forEach(function(e){var d=get(i,e);
+      if(sevOf(e,i)===null&&!d.o&&!d.r&&!(d.img||[]).length)return;
+      h+="<p><strong>"+esc(e.n)+"</strong>: "+sevTxt(sevOf(e,i))+"</p>";
+      if(d.o)h+="<p>Problemas: "+esc(d.o)+"</p>";
+      if(d.r)h+="<p>Recomendación: "+esc(d.r)+"</p>";
+      (d.img||[]).forEach(function(u){h+='<img src="'+u+'" alt="Captura">'});
+    });
+  });
+  $("view").innerHTML=h;$("view").style.display="block";
+}
+function addImgs(i,files){
+  Array.prototype.forEach.call(files,function(f){
+    var r=new FileReader();
+    r.onload=function(){var im=new Image();im.onload=function(){
+      var s=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");
+      c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
+      c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+      var d=E().d;d[i]=d[i]||{};d[i].img=(d[i].img||[]).concat(c.toDataURL("image/jpeg",0.65));
+      save();list();summary();
+    };im.src=r.result};r.readAsDataURL(f);
+  });
+}
+function copy(t){
+  var r=$("rep");r.value=t;r.style.display="block";
+  function fb(){r.focus();r.select();try{document.execCommand("copy");say("Copiado")}catch(e){say("Selecciona y copia el texto")}}
+  try{navigator.clipboard.writeText(t).then(function(){say("Copiado")},fb)}catch(e){fb()}
+}
+load();S.meta.fecha=S.meta.fecha||new Date().toISOString().slice(0,10);
+$("prod").value=S.meta.prod||"";$("fecha").value=S.meta.fecha;
+all();
+$("prod").oninput=function(){S.meta.prod=this.value;save()};
+$("fecha").oninput=function(){S.meta.fecha=this.value;save()};
+$("tabs").addEventListener("click",function(e){
+  var b=e.target.closest("button");if(!b)return;
+  if(b.dataset.t!=null)S.cur=+b.dataset.t;
+  else if(b.dataset.add){S.evs.push({n:"Evaluador/a "+(S.evs.length+1),d:{}});S.cur=S.evs.length-1}
+  else if(b.dataset.del){if(!confirm("¿Quitar a "+E().n+" y todas sus notas?"))return;S.evs.splice(S.cur,1);S.cur=Math.max(0,S.cur-1)}
+  else return;
+  save();all();
+});
+$("tabs").addEventListener("input",function(e){
+  if(e.target.id==="nm"){E().n=e.target.value||"Sin nombre";save();summary();
+    var b=document.querySelector('#tabs button[data-t="'+S.cur+'"]');if(b)b.textContent=E().n}
+});
+$("list").addEventListener("change",function(e){
+  var t=e.target;
+  if(t.type==="radio"){put(+t.name.slice(1),"s",t.value);save();summary()}
+  else if(t.dataset.img!=null){addImgs(+t.dataset.img,t.files);t.value=""}
+});
+$("list").addEventListener("input",function(e){var t=e.target;if(t.dataset.k!=null){put(+t.dataset.k,t.dataset.f,t.value);save()}});
+$("list").addEventListener("click",function(e){
+  var b=e.target.closest("[data-rm]");if(!b)return;
+  var p=b.dataset.rm.split(":");E().d[p[0]].img.splice(+p[1],1);save();list();
+});
+document.querySelectorAll("[data-f]").forEach(function(b){b.onclick=function(){
+  var f=b.dataset.f;copy(f==="csv"?fCsv():fTxt(f==="md"))}});
+$("vw").onclick=function(){visual();$("view").scrollIntoView({behavior:"smooth"})};
+$("pr").onclick=function(){visual();setTimeout(function(){try{window.print()}catch(e){say("Imprime desde el menú del navegador")}},100)};
+$("rs").onclick=function(){if(!confirm("¿Borrar todos los evaluadores, notas y capturas?"))return;S=fresh();S.meta.fecha=new Date().toISOString().slice(0,10);save();$("prod").value="";$("fecha").value=S.meta.fecha;$("rep").style.display="none";$("view").style.display="none";all()};
+</script>
+</body>
+</html>
